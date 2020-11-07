@@ -1,0 +1,37 @@
+version: 2
+jobs:
+  test:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:10.16.0
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: install npm dependences
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: run lint
+          command: npm run lint
+      - run:
+          name: run build
+          command: npm run build
+      - deploy:
+          command: |
+            git config --global user.email $GH_EMAIL
+            git config --global user.name $GH_NAME
+            yarn run deploy
+
+workflows:
+  version: 2
+  test-deploy:
+    jobs:
+      - test:
+          filters:
+            branches:
+              only: main

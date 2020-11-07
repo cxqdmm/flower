@@ -1,12 +1,7 @@
 import React from 'react';
-import First from './scene/first';
 
 const UseContext: React.FC = React.memo(function UseContext(props) {
-  return (
-    <div>
-      <First />
-    </div>
-  );
+  return <div>非洲菊</div>;
 });
 
 export default UseContext;

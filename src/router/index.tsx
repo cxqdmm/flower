@@ -1,8 +1,6 @@
 import home from '../md/home/index.md';
-import useEffect from '../md/useEffect/index.md';
-import UseEffectView from '../md/useEffect';
-import useContext from '../md/useContext/index.md';
-import UseContextView from '../md/useContext';
+import GerberaMd from '../md/gerbera/index.md';
+import GerberaView from '../md/gerbera';
 import { Switch, Redirect, BrowserRouter } from 'react-router-dom';
 import { renderRouterWithChildren } from './routeWithLayout';
 import Layout from '../components/Layout';
@@ -30,14 +28,9 @@ const routes: IRoute[] = [
         component: () => <MdView md={home} />,
       },
       {
-        path: getPath('/useEffect'),
+        path: getPath('/gerbera'),
         name: 'useEffect',
-        component: () => <MdView md={useEffect} view={<UseEffectView />} />,
-      },
-      {
-        path: getPath('/useContext'),
-        name: 'useContext',
-        component: () => <MdView md={useContext} view={<UseContextView />} />,
+        component: () => <MdView md={GerberaMd} view={<GerberaView />} />,
       },
     ],
   },
