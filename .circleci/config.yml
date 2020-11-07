@@ -9,18 +9,18 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: install npm dependences
-          command: npm install
+          name: yarn install
+          command: yarn
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - ./node_modules
       - run:
-          name: run lint
-          command: npm run lint
+          name: yarn lint
+          command: yarn lint
       - run:
-          name: run build
-          command: npm run build
+          name: yarn build
+          command: yarn build
       - deploy:
           command: |
             git config --global user.email $GH_EMAIL
@@ -34,4 +34,4 @@ workflows:
       - test:
           filters:
             branches:
-              only: main
+              only: master
