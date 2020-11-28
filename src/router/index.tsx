@@ -19,7 +19,7 @@ const routes: IRoute[] = [
   {
     path: WEB_ROOT,
     layout: Layout,
-    layoutProps: { title: 'react 解析' },
+    layoutProps: { title: 'flowers' },
     ignoreCache: true,
     children: [
       {
