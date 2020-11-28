@@ -29,7 +29,7 @@ const routes: IRoute[] = [
       },
       {
         path: getPath('/gerbera'),
-        name: 'useEffect',
+        name: 'cloth',
         component: () => <MdView md={GerberaMd} view={<GerberaView />} />,
       },
     ],
