@@ -6,7 +6,7 @@ const PREFIX = 'MdView';
 
 interface IProps {
   className?: string;
-  md: string;
+  md?: string;
   view?: React.ReactNode;
 }
 
@@ -16,7 +16,7 @@ const MdView: React.FC<IProps> = React.memo(function MdView(props) {
   return (
     <div className={cls(`${PREFIX}`, className)}>
       {isDevelopment && view && <div className={`${PREFIX}-body`}>{view}</div>}
-      <div className={`${PREFIX}-md`} dangerouslySetInnerHTML={{ __html: md }}></div>
+      {!!md && <div className={`${PREFIX}-md`} dangerouslySetInnerHTML={{ __html: md }}></div>}
     </div>
   );
 });

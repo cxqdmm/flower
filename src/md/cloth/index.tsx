@@ -473,6 +473,9 @@ const UseContext: React.FC = React.memo(function UseContext(props) {
 
       renderer.render(scene, camera);
     }
+    return () => {
+      ref.current?.removeChild(container);
+    };
   }, []);
 
   return <div ref={ref} className={style.Gerbera}></div>;

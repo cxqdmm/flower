@@ -1,12 +1,12 @@
 import home from '../md/home/index.md';
-import GerberaMd from '../md/gerbera/index.md';
-import GerberaView from '../md/gerbera';
+import ClothView from '../md/cloth';
 import { Switch, Redirect, BrowserRouter } from 'react-router-dom';
 import { renderRouterWithChildren } from './routeWithLayout';
 import Layout from '../components/Layout';
 import React from 'react';
 import MdView from '../components/MdView';
 import { IRoute } from './interface';
+import OrientationTransform from '../md/orientationTransform';
 
 const WEB_ROOT = process.env.WEB_ROOT || '/';
 
@@ -19,7 +19,7 @@ const routes: IRoute[] = [
   {
     path: WEB_ROOT,
     layout: Layout,
-    layoutProps: { title: 'flowers' },
+    layoutProps: { title: '' },
     ignoreCache: true,
     children: [
       {
@@ -28,9 +28,14 @@ const routes: IRoute[] = [
         component: () => <MdView md={home} />,
       },
       {
-        path: getPath('/gerbera'),
+        path: getPath('/cloth'),
         name: 'cloth',
-        component: () => <MdView md={GerberaMd} view={<GerberaView />} />,
+        component: () => <MdView view={<ClothView />} />,
+      },
+      {
+        path: getPath('/orientation'),
+        name: 'Orientation transform',
+        component: () => <MdView view={<OrientationTransform />} />,
       },
     ],
   },
