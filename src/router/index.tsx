@@ -6,7 +6,8 @@ import Layout from '../components/Layout';
 import React from 'react';
 import MdView from '../components/MdView';
 import { IRoute } from './interface';
-import OrientationTransform from '../md/orientationTransform';
+import OrientationTransform from '../md/OrientationTransform';
+import Branch from '../md/Branch';
 
 const WEB_ROOT = process.env.WEB_ROOT || '/';
 
@@ -36,6 +37,11 @@ const routes: IRoute[] = [
         path: getPath('/orientation'),
         name: 'Orientation transform',
         component: () => <MdView view={<OrientationTransform />} />,
+      },
+      {
+        path: getPath('/Gerbera'),
+        name: 'Gerbera',
+        component: () => <MdView view={<Branch />} />,
       },
     ],
   },
