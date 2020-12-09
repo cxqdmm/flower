@@ -15,7 +15,7 @@ interface IBranchOptions {
 
 const defaultBranchOptions = {
   budCount: 1,
-  sizeWeights: 1,
+  sizeWeights: 10,
   flexible: 1,
 };
 
@@ -89,7 +89,7 @@ class Branch {
       this.particles.push(new Particle(0, step * (i + 1), 0, nextFlexible));
     }
     nextFlexible -= flexibleStep;
-    this.particles.push(new Particle(0, this.options.sizeWeights, 0, 0));
+    this.particles.push(new Particle(0, this.options.sizeWeights, 0, nextFlexible));
   }
 
   initConstraints() {
@@ -114,8 +114,8 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
     }
 
     let scene = new THREE.Scene();
-    let camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 10);
-    camera.position.z = 5;
+    let camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 300);
+    camera.position.z = 200;
     let renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -131,7 +131,7 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
       color: 0x0000ff,
     });
 
-    let branch = new Branch({});
+    let branch = new Branch({ budCount: 16, sizeWeights: 160 });
     const geometry = new THREE.BufferGeometry().setFromPoints(branch.getPointsFromParticles());
     const line = new THREE.Line(geometry, material);
     scene.add(line);
@@ -154,6 +154,10 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
         particle.integrate();
       }
 
+      // fix root
+      const root = branch.particles[0];
+      root.position.copy(root.original);
+
       // constraint
       const constraints = branch.constraints;
       const il = constraints.length;
@@ -162,10 +166,6 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
         const constraint = constraints[i];
         lengthConstraints(constraint[0], constraint[1], constraint[2]);
       }
-
-      // fix root
-      const root = branch.particles[0];
-      root.position.copy(root.original);
     }
 
     function animate(now: number) {
