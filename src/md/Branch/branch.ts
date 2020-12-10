@@ -15,8 +15,11 @@ const defaultBranchOptions = {
 };
 
 const diff = new THREE.Vector3(0, 0, 0);
+const diff2 = new THREE.Vector3(0, 0, 0);
+const middleVector = new THREE.Vector3(0, 1, 0);
+const rotateAxis = new THREE.Vector3(0, 0, 0);
 
-function lengthConstraints(p1: Particle, p2: Particle, distance: number) {
+function runLengthConstraints(p1: Particle, p2: Particle, distance: number) {
   diff.subVectors(p2.position, p1.position);
   const currentDist = diff.length();
   if (currentDist === 0) return; // prevents division by 0
@@ -26,17 +29,31 @@ function lengthConstraints(p1: Particle, p2: Particle, distance: number) {
   p2.position.sub(correctionHalf);
 }
 
+function runAngleConstraints(p1: Particle, p2: Particle, p3: Particle) {
+  diff.subVectors(p2.position, p1.position);
+  diff2.subVectors(p3.position, p2.position);
+  const angle = diff.angleTo(diff2);
+
+  if (angle > 0.3) {
+    rotateAxis.copy(diff2).cross(diff).normalize();
+    diff2.applyAxisAngle(rotateAxis, angle - 0.3);
+    p3.position.copy(p2.position).add(diff2);
+  }
+}
 export class Branch {
   options: IBranchOptions;
   particles: Particle[];
-  constraints: Array<[Particle, Particle, number]>;
+  lengthConstraints: Array<[Particle, Particle, number]>;
   geometry: THREE.BufferGeometry;
+  angleConstraints: Array<[Particle, Particle, Particle]>;
   constructor(options: Partial<IBranchOptions>) {
     this.options = Object.assign({}, defaultBranchOptions, options);
     this.particles = [];
-    this.constraints = [];
+    this.lengthConstraints = [];
+    this.angleConstraints = [];
     this.initParticles();
-    this.initConstraints();
+    this.initLengthConstraints();
+    this.initAngleConstraints();
     this.geometry = new THREE.BufferGeometry().setFromPoints(this.getPointsFromParticles());
   }
 
@@ -53,10 +70,16 @@ export class Branch {
     this.particles.push(new Particle(0, this.options.sizeWeights, 0, nextFlexible));
   }
 
-  initConstraints() {
+  initLengthConstraints() {
     for (let i = 0; i < this.particles.length - 1; i++) {
       diff.subVectors(this.particles[i].original, this.particles[i + 1].original);
-      this.constraints.push([this.particles[i], this.particles[i + 1], diff.length()]);
+      this.lengthConstraints.push([this.particles[i], this.particles[i + 1], diff.length()]);
+    }
+  }
+
+  initAngleConstraints() {
+    for (let i = 0; i < this.particles.length - 2; i++) {
+      this.angleConstraints.push([this.particles[i], this.particles[i + 1], this.particles[i + 2]]);
     }
   }
 
@@ -75,13 +98,32 @@ export class Branch {
     const root = this.particles[0];
     root.position.copy(root.original);
 
-    // constraint
-    const constraints = this.constraints;
-    const il = constraints.length;
+    // 长度限制
+    const lengthConstraints = this.lengthConstraints;
+    for (let i = 0; i < lengthConstraints.length; i++) {
+      const constraint = lengthConstraints[i];
+      runLengthConstraints(constraint[0], constraint[1], constraint[2]);
+    }
 
-    for (let i = 0; i < il; i++) {
-      const constraint = constraints[i];
-      lengthConstraints(constraint[0], constraint[1], constraint[2]);
+    // 固定根节点
+    root.position.copy(root.original);
+
+    // 限制第一段的角度
+    const root2 = this.particles[1];
+
+    diff.subVectors(root2.position, root.position);
+    const angle = diff.angleTo(middleVector);
+    if (angle > 0.3) {
+      rotateAxis.copy(diff).cross(middleVector).normalize();
+      diff.applyAxisAngle(rotateAxis, angle - 0.3);
+      root2.position.copy(root.position).add(diff);
+    }
+
+    // 角度限制
+    const angleConstraints = this.angleConstraints;
+    for (let i = 0; i < angleConstraints.length; i++) {
+      const constraint = angleConstraints[i];
+      runAngleConstraints(constraint[0], constraint[1], constraint[2]);
     }
   }
 

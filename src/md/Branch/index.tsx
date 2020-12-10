@@ -19,8 +19,8 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
 
     let scene = new THREE.Scene();
     scene.background = new THREE.Color('white');
-    let camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 400);
-    camera.position.z = 300;
+    let camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 60);
+    camera.position.z = 50;
     let renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -33,10 +33,11 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
     // 正文
 
     const material = new THREE.LineBasicMaterial({
-      color: 0x0000ff,
+      color: new THREE.Color('#4d650d'),
+      linewidth: 20,
     });
 
-    let branch = new Branch({ budCount: 16, sizeWeights: 160 });
+    let branch = new Branch({ budCount: 4, sizeWeights: 16 });
     const line = new THREE.Line(branch.geometry, material);
     scene.add(line);
 
