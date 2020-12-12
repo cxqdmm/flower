@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
-import { Branch } from './branch';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { CurveBranch } from './curveBranch';
 interface IProps {
   className?: string;
 }
@@ -17,29 +18,37 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
       return;
     }
 
-    let scene = new THREE.Scene();
-    scene.background = new THREE.Color('white');
-    let camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 60);
+    // camera
+    let camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 300);
     camera.position.z = 50;
+
     let renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     ref.current.appendChild(renderer.domElement);
 
+    // scene
+    let scene = new THREE.Scene();
+    scene.background = new THREE.Color('white');
+
+    // light
+    const light = new THREE.DirectionalLight(0xffffff);
+    light.position.set(0, 0, 1);
+    scene.add(light);
     // @ts-ignore
     let stats = new Stats();
     ref.current.appendChild(stats.dom);
-
+    // controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.maxPolarAngle = Math.PI * 0.5;
+    controls.minDistance = 0;
+    controls.maxDistance = 100;
     // 正文
-
-    const material = new THREE.LineBasicMaterial({
-      color: new THREE.Color('#4d650d'),
-      linewidth: 20,
-    });
-
-    let branch = new Branch({ budCount: 4, sizeWeights: 16 });
-    const line = new THREE.Line(branch.geometry, material);
-    scene.add(line);
+    const material = new THREE.MeshLambertMaterial({ color: 0x4caf50 });
+    let branch = new CurveBranch({ flexible: 0.4, budCount: 1, sizeWeights: 16 });
+    const objectToCurve = new THREE.Mesh(branch.geometry, material);
+    // scene.add(branch.mesh);
+    scene.add(objectToCurve);
 
     function simulate(now: number) {
       const windStrength = Math.cos(now / 7000) * 20 + 40;
@@ -59,7 +68,7 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
 
     function animate(now: number) {
       requestAnimationFrame(animate);
-      simulate(now);
+      // simulate(now);
       renderer.render(scene, camera);
       stats.update();
     }

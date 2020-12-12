@@ -1,7 +1,7 @@
 import { map } from 'lodash';
 import * as THREE from 'three';
 import { Particle } from './particle';
-
+import { Flow } from 'three/examples/jsm/modifiers/CurveModifier';
 interface IBranchOptions {
   budCount: number;
   sizeWeights: number;
@@ -41,12 +41,26 @@ function runAngleConstraints(p1: Particle, p2: Particle, p3: Particle) {
   }
 }
 
-export class Branch {
+const params = {
+  spline: 'GrannyKnot',
+  radius: 0.5,
+  extrusionSegments: 100,
+  radiusSegments: 3,
+  closed: true,
+  animationView: false,
+  lookAhead: false,
+  cameraHelper: false,
+};
+
+const material = new THREE.MeshLambertMaterial({ color: 0xff00ff });
+
+export class CurveBranch {
   options: IBranchOptions;
   particles: Particle[];
   lengthConstraints: Array<[Particle, Particle, number]>;
   geometry: THREE.BufferGeometry;
   angleConstraints: Array<[Particle, Particle, Particle]>;
+  flow: Flow;
   constructor(options: Partial<IBranchOptions>) {
     this.options = Object.assign({}, defaultBranchOptions, options);
     this.particles = [];
@@ -55,7 +69,19 @@ export class Branch {
     this.initParticles();
     this.initLengthConstraints();
     this.initAngleConstraints();
-    this.geometry = new THREE.BufferGeometry().setFromPoints(this.getPointsFromParticles());
+    this.getPointsFromParticles();
+    this.geometry = this.initGeometry();
+
+    const objectToCurve = new THREE.Mesh(this.geometry, material);
+    this.flow = new Flow(objectToCurve);
+  }
+
+  get mesh() {
+    return this.flow.object3D;
+  }
+
+  initGeometry() {
+    return new THREE.CylinderBufferGeometry(2, 2, this.options.sizeWeights, 32);
   }
 
   initParticles() {
@@ -131,12 +157,7 @@ export class Branch {
   update() {
     this.updatePosition();
     this.runConstraint();
-
-    const p = this.particles;
-    for (let i = 0, il = p.length; i < il; i++) {
-      const v = p[i].position;
-      this.geometry.attributes.position.setXYZ(i, v.x, v.y, v.z);
-    }
-    this.geometry.attributes.position.needsUpdate = true;
+    const curve = new THREE.CatmullRomCurve3(this.getPointsFromParticles());
+    this.flow.updateCurve(0, curve);
   }
 }
