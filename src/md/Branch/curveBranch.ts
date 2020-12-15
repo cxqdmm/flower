@@ -41,17 +41,6 @@ function runAngleConstraints(p1: Particle, p2: Particle, p3: Particle) {
   }
 }
 
-const params = {
-  spline: 'GrannyKnot',
-  radius: 0.5,
-  extrusionSegments: 100,
-  radiusSegments: 3,
-  closed: true,
-  animationView: false,
-  lookAhead: false,
-  cameraHelper: false,
-};
-
 const material = new THREE.MeshLambertMaterial({ color: 0xff00ff });
 
 export class CurveBranch {
@@ -73,7 +62,11 @@ export class CurveBranch {
     this.geometry = this.initGeometry();
 
     const objectToCurve = new THREE.Mesh(this.geometry, material);
+    objectToCurve.rotateX(Math.PI / 2);
+    objectToCurve.rotateY(Math.PI / 2);
+    const curve = new THREE.CatmullRomCurve3(this.getPointsFromParticles());
     this.flow = new Flow(objectToCurve);
+    this.flow.updateCurve(0, curve);
   }
 
   get mesh() {
@@ -81,7 +74,7 @@ export class CurveBranch {
   }
 
   initGeometry() {
-    return new THREE.CylinderBufferGeometry(2, 2, this.options.sizeWeights, 32);
+    return new THREE.CylinderBufferGeometry(0.2, 0.2, this.options.sizeWeights);
   }
 
   initParticles() {

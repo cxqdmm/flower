@@ -2,13 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { CurveBranch } from './curveBranch';
-import { initCoordinateGrid } from '../../utils/initCoordinateGrid';
+import { Flow } from 'three/examples/jsm/modifiers/CurveModifier';
 interface IProps {
   className?: string;
 }
-
-const windForce = new THREE.Vector3(0, 0, 0);
 
 const BranchComp: React.FC<IProps> = React.memo((props) => {
   const { className } = props;
@@ -20,14 +17,8 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
     }
 
     // camera
-    let camera = new THREE.PerspectiveCamera(
-      70,
-      window.innerWidth / window.innerHeight,
-      0.01,
-      3000,
-    );
-    camera.position.z = 40;
-
+    let camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 300);
+    camera.position.set(20, 20, 40);
     let renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -57,38 +48,36 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
     controls.maxDistance = 5000;
     // 正文
 
-    let branch = new CurveBranch({ flexible: 0.4, budCount: 3, sizeWeights: 20 });
-    scene.add(branch.mesh);
-    const boxGeometry = new THREE.BoxBufferGeometry(2, 2, 2);
-    const boxMaterial = new THREE.MeshLambertMaterial({ color: 0x10ff00 });
-    const curveHandles = [];
-    for (const handlePos of branch.particles) {
-      const handle = new THREE.Mesh(boxGeometry, boxMaterial);
-      handle.position.copy(handlePos.position);
-      curveHandles.push(handle);
-      scene.add(handle);
-    }
+    const curve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(10, 0, -10),
+      new THREE.Vector3(10, 0, 10),
+      new THREE.Vector3(-10, 0, 10),
+      new THREE.Vector3(-10, 0, -10),
+    ]);
+    // @ts-ignore
+    curve.curveType = 'centripetal';
+    // @ts-ignore
+    curve.closed = true;
 
-    initCoordinateGrid(scene);
-    // function simulate(now: number) {
-    //   const windStrength = Math.cos(now / 7000) * 20 + 40;
+    const points = curve.getPoints(50);
+    const line = new THREE.LineLoop(
+      new THREE.BufferGeometry().setFromPoints(points),
+      new THREE.LineBasicMaterial({ color: 0x00ff00 }),
+    );
+    scene.add(line);
+    const material = new THREE.MeshLambertMaterial({ color: 0xff00ff });
+    const cylinder = new THREE.CylinderBufferGeometry(5, 5, 1);
+    cylinder.rotateX(Math.PI / 2);
+    cylinder.rotateZ(Math.PI / 2);
+    const objectToCurve = new THREE.Mesh(cylinder, material);
 
-    //   windForce.set(Math.sin(now / 2000), 0, 0);
-    //   windForce.normalize();
-    //   windForce.multiplyScalar(windStrength);
-
-    //   // update force
-    //   const particles = branch.particles;
-    //   for (let i = 0; i < particles.length; i++) {
-    //     particles[i].addForce(windForce);
-    //   }
-
-    //   branch.update();
-    // }
+    const flow = new Flow(objectToCurve);
+    flow.updateCurve(0, curve);
+    scene.add(flow.object3D);
 
     function animate(now: number) {
       requestAnimationFrame(animate);
-      // simulate(now);
+      flow.moveAlongCurve(0.001);
       renderer.render(scene, camera);
       stats.update();
     }
