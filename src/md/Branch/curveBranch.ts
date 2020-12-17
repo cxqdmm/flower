@@ -6,12 +6,19 @@ interface IBranchOptions {
   budCount: number;
   sizeWeights: number;
   flexible: number;
+  shape: THREE.Shape;
 }
 
 const defaultBranchOptions = {
   budCount: 1,
   sizeWeights: 10,
   flexible: 1,
+  shape: new THREE.Shape([
+    new THREE.Vector2(-1, 0),
+    new THREE.Vector2(-0.5, 1.5),
+    new THREE.Vector2(2, 1.5),
+    new THREE.Vector2(1, 0),
+  ]),
 };
 
 const diff = new THREE.Vector3(0, 0, 0);
@@ -40,41 +47,27 @@ function runAngleConstraints(p1: Particle, p2: Particle, p3: Particle) {
     p3.position.copy(p2.position).add(diff2);
   }
 }
-
-const material = new THREE.MeshLambertMaterial({ color: 0xff00ff });
-
 export class CurveBranch {
   options: IBranchOptions;
   particles: Particle[];
   lengthConstraints: Array<[Particle, Particle, number]>;
-  geometry: THREE.BufferGeometry;
+  geometry?: THREE.BufferGeometry;
   angleConstraints: Array<[Particle, Particle, Particle]>;
-  flow: Flow;
+  _shape?: THREE.Shape;
+  extrudeSetting: THREE.ExtrudeGeometryOptions;
+
   constructor(options: Partial<IBranchOptions>) {
     this.options = Object.assign({}, defaultBranchOptions, options);
+    this.extrudeSetting = {
+      steps: 100,
+      bevelEnabled: true,
+    } as THREE.ExtrudeGeometryOptions;
     this.particles = [];
     this.lengthConstraints = [];
     this.angleConstraints = [];
     this.initParticles();
     this.initLengthConstraints();
     this.initAngleConstraints();
-    this.getPointsFromParticles();
-    this.geometry = this.initGeometry();
-
-    const objectToCurve = new THREE.Mesh(this.geometry, material);
-    objectToCurve.rotateX(Math.PI / 2);
-    objectToCurve.rotateY(Math.PI / 2);
-    const curve = new THREE.CatmullRomCurve3(this.getPointsFromParticles());
-    this.flow = new Flow(objectToCurve);
-    this.flow.updateCurve(0, curve);
-  }
-
-  get mesh() {
-    return this.flow.object3D;
-  }
-
-  initGeometry() {
-    return new THREE.CylinderBufferGeometry(0.2, 0.2, this.options.sizeWeights);
   }
 
   initParticles() {
@@ -84,7 +77,9 @@ export class CurveBranch {
     let nextFlexible = 1 - flexibleStep;
     for (let i = 0; i < this.options.budCount; i++) {
       nextFlexible -= flexibleStep;
-      this.particles.push(new Particle(0, step * (i + 1), 0, nextFlexible));
+      this.particles.push(
+        new Particle(step * (i + 1) * nextFlexible, step * (i + 1), 0, nextFlexible),
+      );
     }
     nextFlexible -= flexibleStep;
     this.particles.push(new Particle(0, this.options.sizeWeights, 0, nextFlexible));
@@ -150,7 +145,20 @@ export class CurveBranch {
   update() {
     this.updatePosition();
     this.runConstraint();
-    const curve = new THREE.CatmullRomCurve3(this.getPointsFromParticles());
-    this.flow.updateCurve(0, curve);
+    const closedSpline = new THREE.CatmullRomCurve3(this.getPointsFromParticles());
+    // const closedSpline = new THREE.CatmullRomCurve3([
+    //   new THREE.Vector3(-60, -100, 60),
+    //   new THREE.Vector3(-60, 20, 60),
+    //   new THREE.Vector3(-60, 120, 60),
+    //   new THREE.Vector3(60, 20, -60),
+    //   new THREE.Vector3(60, -100, -60),
+    // ]);
+    // @ts-ignore
+    closedSpline.curveType = 'catmullrom';
+    // @ts-ignore
+    closedSpline.closed = false;
+    this.extrudeSetting.extrudePath = closedSpline;
+
+    this.geometry = new THREE.ExtrudeBufferGeometry(this.options.shape, this.extrudeSetting);
   }
 }

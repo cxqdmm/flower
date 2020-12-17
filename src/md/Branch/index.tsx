@@ -26,7 +26,7 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
       0.01,
       3000,
     );
-    camera.position.z = 40;
+    camera.position.set(20, 20, 800);
 
     let renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -58,37 +58,35 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
     // 正文
 
     let branch = new CurveBranch({ flexible: 0.4, budCount: 3, sizeWeights: 20 });
-    scene.add(branch.mesh);
-    const boxGeometry = new THREE.BoxBufferGeometry(2, 2, 2);
-    const boxMaterial = new THREE.MeshLambertMaterial({ color: 0x10ff00 });
-    const curveHandles = [];
-    for (const handlePos of branch.particles) {
-      const handle = new THREE.Mesh(boxGeometry, boxMaterial);
-      handle.position.copy(handlePos.position);
-      curveHandles.push(handle);
-      scene.add(handle);
-    }
 
+    const material1 = new THREE.MeshLambertMaterial({ color: 0x10ff00, wireframe: false });
+    let mesh: THREE.Mesh;
+    branch.update();
+    mesh = new THREE.Mesh(branch.geometry, material1);
+    scene.add(mesh);
     initCoordinateGrid(scene);
-    // function simulate(now: number) {
-    //   const windStrength = Math.cos(now / 7000) * 20 + 40;
+    function simulate(now: number) {
+      const windStrength = Math.cos(now / 7000) * 20 + 40;
 
-    //   windForce.set(Math.sin(now / 2000), 0, 0);
-    //   windForce.normalize();
-    //   windForce.multiplyScalar(windStrength);
+      windForce.set(Math.sin(now / 2000), 0, 0);
+      windForce.normalize();
+      windForce.multiplyScalar(windStrength);
 
-    //   // update force
-    //   const particles = branch.particles;
-    //   for (let i = 0; i < particles.length; i++) {
-    //     particles[i].addForce(windForce);
-    //   }
+      // update force
+      const particles = branch.particles;
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].addForce(windForce);
+      }
+      scene.remove(mesh);
 
-    //   branch.update();
-    // }
+      branch.update();
+      mesh = new THREE.Mesh(branch.geometry, material1);
+      scene.add(mesh);
+    }
 
     function animate(now: number) {
       requestAnimationFrame(animate);
-      // simulate(now);
+      simulate(now);
       renderer.render(scene, camera);
       stats.update();
     }
