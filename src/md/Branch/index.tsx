@@ -57,7 +57,7 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
     controls.maxDistance = 5000;
     // 正文
 
-    let branch = new CurveBranch({ flexible: 0.4, budCount: 3, sizeWeights: 20 });
+    let branch = new CurveBranch({ flexible: 0.6, budCount: 6, sizeWeights: 20 });
 
     const material1 = new THREE.MeshLambertMaterial({ color: 0x10ff00, wireframe: false });
     let mesh: THREE.Mesh;
@@ -66,10 +66,10 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
     scene.add(mesh);
     initCoordinateGrid(scene);
     function simulate(now: number) {
-      const windStrength = Math.cos(now / 7000) * 20 + 40;
+      const windStrength = 40;
 
-      windForce.set(Math.sin(now / 2000), 0, 0);
-      windForce.normalize();
+      windForce.set(Math.sin(now / 1000), 0, 0);
+      // windForce.normalize();
       windForce.multiplyScalar(windStrength);
 
       // update force
