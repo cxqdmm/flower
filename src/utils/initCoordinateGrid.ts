@@ -12,14 +12,14 @@ export function initCoordinateGrid(scene: THREE.Scene) {
     // 经过上面的步骤，就能够得到坐标网格了。
     var line = new THREE.Line(
       geometry,
-      new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.2 }),
+      new THREE.LineBasicMaterial({ color: 0xf5f7f9, opacity: 0.2 }),
     );
     line.position.z = i * 10 - 200;
     scene.add(line);
 
     var liney = new THREE.Line(
       geometry,
-      new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.2 }),
+      new THREE.LineBasicMaterial({ color: 0xf5f7f9, opacity: 0.2 }),
     );
     liney.position.x = i * 10 - 200;
     liney.rotation.y = (90 * Math.PI) / 180; // 将线旋转90度

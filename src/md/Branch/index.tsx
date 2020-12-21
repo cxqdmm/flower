@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import Stats from 'three/examples/jsm/libs/stats.module';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { CurveBranch } from './curveBranch';
 import { initCoordinateGrid } from '../../utils/initCoordinateGrid';
+import { Flower } from './Flower';
 interface IProps {
   className?: string;
 }
@@ -57,14 +57,11 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
     controls.maxDistance = 5000;
     // 正文
 
-    let branch = new CurveBranch({ flexible: 0.6, budCount: 6, sizeWeights: 20 });
-
-    const material1 = new THREE.MeshLambertMaterial({ color: 0x10ff00, wireframe: false });
-    let mesh: THREE.Mesh;
-    branch.update();
-    mesh = new THREE.Mesh(branch.geometry, material1);
-    scene.add(mesh);
     initCoordinateGrid(scene);
+
+    const flower = new Flower();
+    scene.add(flower.mesh);
+
     function simulate(now: number) {
       const windStrength = 40;
 
@@ -73,15 +70,11 @@ const BranchComp: React.FC<IProps> = React.memo((props) => {
       windForce.multiplyScalar(windStrength);
 
       // update force
-      const particles = branch.particles;
+      const particles = flower.branch.stemNodes;
       for (let i = 0; i < particles.length; i++) {
         particles[i].addForce(windForce);
       }
-      scene.remove(mesh);
-
-      branch.update();
-      mesh = new THREE.Mesh(branch.geometry, material1);
-      scene.add(mesh);
+      flower.update();
     }
 
     function animate(now: number) {
