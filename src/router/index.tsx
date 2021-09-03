@@ -6,7 +6,6 @@ import Layout from '../components/Layout';
 import React from 'react';
 import MdView from '../components/MdView';
 import { IRoute } from './interface';
-import OrientationTransform from '../md/OrientationTransform';
 import Branch from '../md/Branch';
 
 const WEB_ROOT = process.env.WEB_ROOT || '/';
@@ -29,19 +28,9 @@ const routes: IRoute[] = [
         component: () => <MdView md={home} />,
       },
       {
-        path: getPath('/cloth'),
-        name: 'cloth',
+        path: getPath('/autorun'),
+        name: '自动化执行脚本',
         component: () => <MdView view={<ClothView />} />,
-      },
-      {
-        path: getPath('/orientation'),
-        name: 'Orientation transform',
-        component: () => <MdView view={<OrientationTransform />} />,
-      },
-      {
-        path: getPath('/Gerbera'),
-        name: 'Gerbera',
-        component: () => <MdView view={<Branch />} />,
       },
     ],
   },
