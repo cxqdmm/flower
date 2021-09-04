@@ -1,13 +1,11 @@
 import home from '../md/home/index.md';
-import ClothView from '../md/cloth';
 import { Switch, Redirect, BrowserRouter } from 'react-router-dom';
 import { renderRouterWithChildren } from './routeWithLayout';
 import Layout from '../components/Layout';
 import React from 'react';
 import MdView from '../components/MdView';
 import { IRoute } from './interface';
-import CurveModify from '../md/CurveModify';
-import Branch from '../md/Branch';
+import AutoMan from '../md/AutoMan';
 
 const WEB_ROOT = process.env.WEB_ROOT || '/';
 
@@ -29,19 +27,9 @@ const routes: IRoute[] = [
         component: () => <MdView md={home} />,
       },
       {
-        path: getPath('/autorun'),
+        path: getPath('/autoMan'),
         name: '自动化执行脚本',
-        component: () => <MdView view={<ClothView />} />,
-      },
-      {
-        path: getPath('/curveModify'),
-        name: 'curveModify',
-        component: () => <MdView view={<CurveModify />} />,
-      },
-      {
-        path: getPath('/Gerbera'),
-        name: 'Gerbera',
-        component: () => <MdView view={<Branch />} />,
+        component: () => <MdView view={<AutoMan />} />,
       },
     ],
   },
