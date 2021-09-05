@@ -1,6 +1,6 @@
 import React from 'react';
 import cls from 'classnames';
-import './index.scss';
+import './index.less';
 import RunWindow from './components/RunWindow';
 
 const PREFIX = 'AutoMan';
