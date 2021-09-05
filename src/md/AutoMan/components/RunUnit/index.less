@@ -2,6 +2,7 @@
   display: flex;
   &-left {
     flex: 1;
+    overflow: hidden;
     .ant-input {
       width: 100%;
       height: 500px;
@@ -9,6 +10,31 @@
   }
   &-right {
     padding: 10px;
-    width: 200px;
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    &Action {
+      margin-bottom: 10px;
+    }
+  }
+
+  &-edit {
+    border: 1px solid #222;
+  }
+  &-title {
+    display: flex;
+    align-items: center;
+    &Main {
+      font-weight: 600;
+    }
+    .ant-result {
+      padding: 0 8px;
+    }
+    .ant-result-icon {
+      margin: 0;
+    }
+    .anticon {
+      font-size: 24px;
+    }
   }
 }

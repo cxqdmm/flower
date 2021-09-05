@@ -22,14 +22,9 @@ const routes: IRoute[] = [
     ignoreCache: true,
     children: [
       {
-        path: homePath,
-        name: 'home',
-        component: () => <MdView md={home} />,
-      },
-      {
         path: getPath('/autoMan'),
         name: '自动化执行脚本',
-        component: () => <MdView view={<AutoMan />} />,
+        component: () => <AutoMan />,
       },
     ],
   },

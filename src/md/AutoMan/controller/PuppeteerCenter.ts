@@ -7,7 +7,7 @@ import { Puppeteer, Browser } from 'puppeteer-core/lib/cjs/puppeteer/api-docs-en
 import { SandBox } from './sandBox';
 
 interface IPuppeteerCenterOptions {
-  remoteDebuggingPort?: number;
+  remoteDebuggingPort?: string;
 }
 
 interface IChromeVersion {
@@ -26,7 +26,7 @@ export enum ConnectionStatus {
   connecting = '连接中',
 }
 export default class PuppeteerCenter extends EventEmitter2 {
-  remoteDebuggingPort?: number;
+  remoteDebuggingPort?: string;
   chromeVersion?: IChromeVersion;
   sandBox: SandBox;
   puppeteer!: Puppeteer;
@@ -40,22 +40,16 @@ export default class PuppeteerCenter extends EventEmitter2 {
   }
 
   async getChromeVersion() {
-    try {
-      const data = await api<IChromeVersion>(
-        `http://localhost:${this.remoteDebuggingPort}/json/version`,
-      );
-      if (data) {
-        this.chromeVersion = data;
-      }
-    } catch (error) {
-      this.emit('error', error);
-      // throw Error(error);
+    const data = await api<IChromeVersion>(
+      `http://localhost:${this.remoteDebuggingPort}/json/version`,
+    );
+    if (data) {
+      this.chromeVersion = data;
     }
   }
 
-  dispatchError(error: any) {
-    this.emit('error', error);
-    // throw Error(error);
+  dispatchMessage(error: any) {
+    this.emit('message', error);
   }
 
   set connectionStatus(status: ConnectionStatus) {
@@ -68,48 +62,56 @@ export default class PuppeteerCenter extends EventEmitter2 {
     this.emit('connectStatus', status);
   }
 
-  async connect(remoteDebuggingPort?: number) {
+  async disConnect() {
+    await this.browser?.disconnect();
+    this.connectionStatus = ConnectionStatus.unConnection;
+  }
+
+  async connect(remoteDebuggingPort?: string) {
+    this.emit('message', '开始连接 chrome...');
     this.connectionStatus = ConnectionStatus.connecting;
     try {
-      if (remoteDebuggingPort) {
-        this.remoteDebuggingPort = remoteDebuggingPort;
-      } else {
-        if (this.remoteDebuggingPort) {
-          this.dispatchError('browser/connect: 请提供chrome的远程调试端口');
-          return;
-        }
+      this.remoteDebuggingPort = remoteDebuggingPort || this.remoteDebuggingPort;
+
+      if (!this.remoteDebuggingPort) {
+        throw new Error('browser/connect: 请提供chrome的远程调试端口');
       }
+
       await this.getChromeVersion();
 
       if (this.chromeVersion?.webSocketDebuggerUrl) {
-        this.browser = await puppeteer.connect({
+        this.browser = await this.puppeteer.connect({
           browserWSEndpoint: this.chromeVersion.webSocketDebuggerUrl,
         });
       } else {
-        this.dispatchError(
+        throw new Error(
           `browser/connect: 没有获取到 webSocketDebuggerUrl, 请确认远程调试端口是否生效-> 浏览器访问localhost:${this.remoteDebuggingPort}/json/version查看`,
         );
-        return;
       }
       this.connectionStatus = ConnectionStatus.success;
+      this.emit('message', `连接成功\nchrome 版本信息：\n${JSON.stringify(this.chromeVersion)}`);
     } catch (error) {
       this.connectionStatus = ConnectionStatus.failed;
+      this.dispatchMessage(error.stack);
+      throw error;
     }
   }
 
   setEnv() {
-    if (this.browser)
+    if (this.browser) {
+      this.emit('message', '设置sandBox环境变量 puppeteer browser');
       this.sandBox.initEnv({
         puppeteer: this.puppeteer,
         browser: this.browser,
       });
+    }
   }
 
   runScript(code: string) {
     try {
       this.sandBox.runAsyncEval(code);
     } catch (error) {
-      this.dispatchError(error);
+      this.dispatchMessage(error);
     }
   }
 }
