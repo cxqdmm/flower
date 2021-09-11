@@ -48,8 +48,8 @@ export default class PuppeteerCenter extends EventEmitter2 {
     }
   }
 
-  dispatchMessage(error: any) {
-    this.emit('message', error);
+  log(msg: string) {
+    this.emit('log', msg);
   }
 
   set connectionStatus(status: ConnectionStatus) {
@@ -103,7 +103,7 @@ export default class PuppeteerCenter extends EventEmitter2 {
       this.emit('message', `连接成功\nchrome 版本信息：\n${JSON.stringify(this.chromeVersion)}`);
     } catch (error: any) {
       this.connectionStatus = ConnectionStatus.failed;
-      this.dispatchMessage(error.stack);
+      this.log(error.stack);
       throw error;
     }
   }
@@ -114,6 +114,7 @@ export default class PuppeteerCenter extends EventEmitter2 {
       this.sandBox.initEnv({
         puppeteer: this.puppeteer,
         browser: this.browser,
+        log: this.log.bind(this),
       });
     }
   }
@@ -122,7 +123,7 @@ export default class PuppeteerCenter extends EventEmitter2 {
     try {
       this.sandBox.runAsyncEval(code);
     } catch (error) {
-      this.dispatchMessage(error);
+      this.log(error);
     }
   }
 }

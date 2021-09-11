@@ -3,6 +3,7 @@ import { Browser, Page, Puppeteer } from 'puppeteer-core/lib/cjs/puppeteer/api-d
 interface IEnv {
   puppeteer: Puppeteer;
   browser: Browser;
+  log: (msg: string) => void;
   activePage?: Page;
 }
 export class SandBox {
@@ -11,11 +12,13 @@ export class SandBox {
   initEnv(env: IEnv) {
     this.env = env;
   }
+
   setActivePage(page: Page) {
     this.env.activePage = page;
   }
+
   runAsyncEval(scriptString: string) {
-    (function ({ puppeteer, browser, activePage }) {
+    (function ({ puppeteer, browser, activePage, log }) {
       const str = `
         async function runCode() {
           ${scriptString}

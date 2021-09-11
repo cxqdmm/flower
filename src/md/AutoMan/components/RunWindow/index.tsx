@@ -3,7 +3,7 @@ import cls from 'classnames';
 import RunUnit from '../RunUnit';
 import ErrorView from '../ErrorView';
 import './index.less';
-import { Button, Divider, Input, Row, Col } from 'antd';
+import { Button } from 'antd';
 const PREFIX = 'RunWindow';
 interface IProps {
   className?: string;
@@ -12,26 +12,26 @@ interface IProps {
 const RunWindow: React.FC<IProps> = React.memo(function RunWindow(props) {
   const { className } = props;
   const [content, setCode] = useState<string>('');
-  const [errorList, setErrorList] = useState<string>('');
+  const [logList, setLogList] = useState<string>('');
   const onContentChange = useCallback((value: string) => {
     setCode(value);
   }, []);
 
-  const handleError = (error: any) => {
-    setErrorList((err) => {
-      return err + (error.stack || error) + '\r\n';
+  const handleLog = (msg: any) => {
+    setLogList((msgs) => {
+      return msgs + msg + '\r\n';
     });
   };
   const clearError = () => {
-    setErrorList('');
+    setLogList('');
   };
   return (
     <div className={cls(`${PREFIX}`, className)}>
       <div className={`${PREFIX}-top`}>
-        <RunUnit code={content} onContentChange={onContentChange} onError={handleError} />
+        <RunUnit code={content} onContentChange={onContentChange} onLog={handleLog} />
       </div>
       <div className={`${PREFIX}-bottom`}>
-        <ErrorView className={`${PREFIX}-bottomLeft`} error={errorList} />
+        <ErrorView className={`${PREFIX}-bottomLeft`} error={logList} />
         <div className={`${PREFIX}-bottomRight`}>
           <Button onClick={clearError}>清空</Button>
         </div>

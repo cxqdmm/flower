@@ -20,22 +20,22 @@ interface IProps {
   className?: string;
   code: string;
   onContentChange: (value: string) => void;
-  onError: (error: any) => void;
+  onLog: (msg: any) => void;
 }
 
 const RunUnit: React.FC<IProps> = React.memo(function RunUnit(props) {
-  const { className, code, onContentChange, onError } = props;
+  const { className, code, onContentChange, onLog } = props;
   const [remoteDebuggingPort, setPort] = useState<string>();
   const [pages, setPages] = useState<Page[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(
     ConnectionStatus.unConnection,
   );
 
-  const handleError = useCallback(
+  const handleLog = useCallback(
     (err) => {
-      onError(err);
+      onLog(err);
     },
-    [onError],
+    [onLog],
   );
 
   const onConnectionStatus = useCallback((status: ConnectionStatus) => {
@@ -52,13 +52,13 @@ const RunUnit: React.FC<IProps> = React.memo(function RunUnit(props) {
   }, [puppeteerCenter]);
 
   useEffect(() => {
-    puppeteerCenter.on('message', handleError);
+    puppeteerCenter.on('log', handleLog);
     puppeteerCenter.on('connectStatus', onConnectionStatus);
     return () => {
-      puppeteerCenter.off('message', handleError);
-      puppeteerCenter.off('message', onConnectionStatus);
+      puppeteerCenter.off('log', handleLog);
+      puppeteerCenter.off('connectStatus', onConnectionStatus);
     };
-  }, [handleError, onConnectionStatus, puppeteerCenter]);
+  }, [handleLog, onConnectionStatus, puppeteerCenter]);
 
   const connectSwitch = useCallback(async () => {
     if (connectionStatus === ConnectionStatus.success) {
