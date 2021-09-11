@@ -4,14 +4,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import cls from 'classnames';
 import PuppeteerCenter, { ConnectionStatus } from '../../controller/PuppeteerCenter';
-import { Button, Divider, Input, Row, Col, Result } from 'antd';
+import { Button, Divider, Input, Row, Col, Result, Select } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
+import { find } from 'lodash';
 import './index.less';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/lib/codemirror.js';
 import 'codemirror/theme/material.css';
 import 'codemirror/mode/xml/xml';
 import 'codemirror/mode/javascript/javascript';
+import { Page } from 'puppeteer-core/lib/cjs/puppeteer/common/Page';
 
 const PREFIX = 'RunUnit';
 interface IProps {
@@ -24,6 +26,7 @@ interface IProps {
 const RunUnit: React.FC<IProps> = React.memo(function RunUnit(props) {
   const { className, code, onContentChange, onError } = props;
   const [remoteDebuggingPort, setPort] = useState<string>();
+  const [pages, setPages] = useState<Page[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(
     ConnectionStatus.unConnection,
   );
@@ -42,6 +45,11 @@ const RunUnit: React.FC<IProps> = React.memo(function RunUnit(props) {
   const puppeteerCenter = useMemo(() => {
     return new PuppeteerCenter();
   }, []);
+  useEffect(() => {
+    puppeteerCenter.on('pageChange', (pages) => {
+      setPages(pages);
+    });
+  }, [puppeteerCenter]);
 
   useEffect(() => {
     puppeteerCenter.on('message', handleError);
@@ -70,6 +78,16 @@ const RunUnit: React.FC<IProps> = React.memo(function RunUnit(props) {
 
   const handlePortChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPort(e.target.value);
+  };
+
+  const handleSelectPage = (value: string) => {
+    const selectedPage = find(pages, (page) => {
+      // @ts-ignore
+      return page._target._targetInfo.targetId === value;
+    });
+    if (selectedPage) {
+      puppeteerCenter.emit('activePage', selectedPage);
+    }
   };
 
   const connectionDesc = useMemo(() => {
@@ -106,6 +124,7 @@ const RunUnit: React.FC<IProps> = React.memo(function RunUnit(props) {
               {connectionDesc}
             </div>
           </Divider>
+
           <Row>
             <Col span={16}>
               <Input placeholder="远程调试端口" onChange={handlePortChange} />
@@ -114,6 +133,24 @@ const RunUnit: React.FC<IProps> = React.memo(function RunUnit(props) {
               <Button onClick={connectSwitch}>
                 {connectionStatus === ConnectionStatus.success ? '断开' : '连接'}
               </Button>
+            </Col>
+          </Row>
+          <Row>
+            <Col span={24}>
+              <div>激活的页面</div>
+              <Select
+                onChange={handleSelectPage}
+                className={`${PREFIX}-pageSelect`}
+                placeholder="选择激活的page"
+              >
+                {pages.map((page) => {
+                  // @ts-ignore
+                  const id = page._target._targetInfo.targetId;
+                  // @ts-ignore
+                  const title = page._target._targetInfo.title;
+                  return <Select.Option value={id}>{title}</Select.Option>;
+                })}
+              </Select>
             </Col>
           </Row>
         </div>

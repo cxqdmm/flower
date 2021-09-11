@@ -3,7 +3,7 @@
 import { api } from '../../../utils/api';
 import { EventEmitter2 } from 'eventemitter2';
 import puppeteer from 'puppeteer-core/lib/cjs/puppeteer/web';
-import { Puppeteer, Browser } from 'puppeteer-core/lib/cjs/puppeteer/api-docs-entry';
+import { Puppeteer, Browser, Page } from 'puppeteer-core/lib/cjs/puppeteer/api-docs-entry';
 import { SandBox } from './sandBox';
 
 interface IPuppeteerCenterOptions {
@@ -82,6 +82,17 @@ export default class PuppeteerCenter extends EventEmitter2 {
       if (this.chromeVersion?.webSocketDebuggerUrl) {
         this.browser = await this.puppeteer.connect({
           browserWSEndpoint: this.chromeVersion.webSocketDebuggerUrl,
+          defaultViewport: null,
+        });
+        const pages = await this.browser.pages();
+        this.emit('pageChange', pages);
+        this.browser.on('targetchanged', async (res) => {
+          const pages = await this.browser?.pages();
+          this.emit('pageChange', pages);
+        });
+        this.on('activePage', (page: Page) => {
+          page.bringToFront();
+          this.sandBox.setActivePage(page);
         });
       } else {
         throw new Error(
@@ -90,7 +101,7 @@ export default class PuppeteerCenter extends EventEmitter2 {
       }
       this.connectionStatus = ConnectionStatus.success;
       this.emit('message', `连接成功\nchrome 版本信息：\n${JSON.stringify(this.chromeVersion)}`);
-    } catch (error) {
+    } catch (error: any) {
       this.connectionStatus = ConnectionStatus.failed;
       this.dispatchMessage(error.stack);
       throw error;
