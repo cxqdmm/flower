@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import cls from 'classnames';
 import RunUnit from '../RunUnit';
-import ErrorView from '../ErrorView';
+import Code from '../Code';
 import './index.less';
 import { Button } from 'antd';
 const PREFIX = 'RunWindow';
@@ -12,18 +12,18 @@ interface IProps {
 const RunWindow: React.FC<IProps> = React.memo(function RunWindow(props) {
   const { className } = props;
   const [content, setCode] = useState<string>('');
-  const [logList, setLogList] = useState<string>('');
+  const [log, setLog] = useState<string>('');
   const onContentChange = useCallback((value: string) => {
     setCode(value);
   }, []);
 
   const handleLog = (msg: any) => {
-    setLogList((msgs) => {
+    setLog((msgs) => {
       return msgs + msg + '\r\n';
     });
   };
   const clearError = () => {
-    setLogList('');
+    setLog('');
   };
   return (
     <div className={cls(`${PREFIX}`, className)}>
@@ -31,7 +31,12 @@ const RunWindow: React.FC<IProps> = React.memo(function RunWindow(props) {
         <RunUnit code={content} onContentChange={onContentChange} onLog={handleLog} />
       </div>
       <div className={`${PREFIX}-bottom`}>
-        <ErrorView className={`${PREFIX}-bottomLeft`} error={logList} />
+        <Code
+          className={`${PREFIX}-bottomLeft`}
+          value={log}
+          controlled={false}
+          scrollToBottomWhenChange={true}
+        />
         <div className={`${PREFIX}-bottomRight`}>
           <Button onClick={clearError}>清空</Button>
         </div>

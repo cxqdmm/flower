@@ -8,12 +8,8 @@ import { Button, Divider, Input, Row, Col, Result, Select } from 'antd';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import { find } from 'lodash';
 import './index.less';
-import 'codemirror/lib/codemirror.css';
-import 'codemirror/lib/codemirror.js';
-import 'codemirror/theme/material.css';
-import 'codemirror/mode/xml/xml';
-import 'codemirror/mode/javascript/javascript';
 import { Page } from 'puppeteer-core/lib/cjs/puppeteer/common/Page';
+import Code from '../Code';
 
 const PREFIX = 'RunUnit';
 interface IProps {
@@ -102,8 +98,7 @@ const RunUnit: React.FC<IProps> = React.memo(function RunUnit(props) {
   return (
     <div className={cls(`${PREFIX}`, className)}>
       <div className={`${PREFIX}-left`}>
-        <CodeMirror
-          className={`${PREFIX}-edit`}
+        <Code
           value={code}
           options={{
             mode: 'text/javascript',
