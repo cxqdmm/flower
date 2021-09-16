@@ -4,8 +4,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import cls from 'classnames';
 import PuppeteerCenter, { ConnectionStatus } from '../../controller/PuppeteerCenter';
-import { Button, Divider, Input, Row, Col, Result, Select } from 'antd';
-import { Controlled as CodeMirror } from 'react-codemirror2';
+import { Button, Divider, Input, Result, Select } from 'antd';
 import { find } from 'lodash';
 import './index.less';
 import { Page } from 'puppeteer-core/lib/cjs/puppeteer/common/Page';
@@ -88,16 +87,64 @@ const RunUnit: React.FC<IProps> = React.memo(function RunUnit(props) {
 
   const connectionDesc = useMemo(() => {
     if (connectionStatus === ConnectionStatus.success) {
-      return <Result status="success" />;
+      return <Result status="success" className="m-r-10" />;
     } else if (connectionStatus === ConnectionStatus.failed) {
-      return <Result status="error" />;
+      return <Result status="error" className="m-r-10" />;
     }
-    return '未连接';
+    return <Result status="info" className="m-r-10" />;
   }, [connectionStatus]);
 
   return (
     <div className={cls(`${PREFIX}`, className)}>
-      <div className={`${PREFIX}-left`}>
+      <div className={`${PREFIX}-head`}>
+        <div className={`${PREFIX}-chrome`}>
+          {connectionDesc}
+          <span className="m-r-10">远程调试端口</span>
+          <Input
+            placeholder="远程调试端口"
+            className="m-r-10"
+            size="middle"
+            onChange={handlePortChange}
+          />
+          <Button
+            onClick={connectSwitch}
+            className="m-r-10"
+            size="small"
+            type="primary"
+            shape="round"
+          >
+            {connectionStatus === ConnectionStatus.success ? '断开' : '连接'}
+          </Button>
+        </div>
+        {connectionStatus === ConnectionStatus.success && (
+          <>
+            <Divider type="vertical" />
+            <div className={`${PREFIX}-page`}>
+              <div className="m-r-10">激活的页面</div>
+              <Select
+                onChange={handleSelectPage}
+                className={`${PREFIX}-pageSelect m-r-10`}
+                placeholder="选择激活的page"
+              >
+                {pages.map((page) => {
+                  // @ts-ignore
+                  const id = page._target._targetInfo.targetId;
+                  // @ts-ignore
+                  const title = page._target._targetInfo.title;
+                  return <Select.Option value={id}>{title}</Select.Option>;
+                })}
+              </Select>
+            </div>
+            <div className={`${PREFIX}-action`}>
+              <Divider type="vertical" />
+              <Button onClick={run} size="small" disabled={!code} type="primary" shape="round">
+                执行
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
+      <div className={`${PREFIX}-body`}>
         <Code
           value={code}
           options={{
@@ -109,49 +156,6 @@ const RunUnit: React.FC<IProps> = React.memo(function RunUnit(props) {
           }}
           onBeforeChange={onChange}
         />
-      </div>
-      <div className={`${PREFIX}-right`}>
-        <div className={`${PREFIX}-rightAction`}>
-          <Divider orientation="left" plain>
-            <div className={`${PREFIX}-title`}>
-              <span className={`${PREFIX}-titleMain`}>目标Chrome</span>
-              <Divider type="vertical" />
-              {connectionDesc}
-            </div>
-          </Divider>
-
-          <Row>
-            <Col span={16}>
-              <Input placeholder="远程调试端口" onChange={handlePortChange} />
-            </Col>
-            <Col span={8}>
-              <Button onClick={connectSwitch}>
-                {connectionStatus === ConnectionStatus.success ? '断开' : '连接'}
-              </Button>
-            </Col>
-          </Row>
-          <Row>
-            <Col span={24}>
-              <div>激活的页面</div>
-              <Select
-                onChange={handleSelectPage}
-                className={`${PREFIX}-pageSelect`}
-                placeholder="选择激活的page"
-              >
-                {pages.map((page) => {
-                  // @ts-ignore
-                  const id = page._target._targetInfo.targetId;
-                  // @ts-ignore
-                  const title = page._target._targetInfo.title;
-                  return <Select.Option value={id}>{title}</Select.Option>;
-                })}
-              </Select>
-            </Col>
-          </Row>
-        </div>
-        <div>
-          <Button onClick={run}>执行</Button>
-        </div>
       </div>
     </div>
   );

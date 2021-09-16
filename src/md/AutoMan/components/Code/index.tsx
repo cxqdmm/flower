@@ -66,7 +66,6 @@ const Code: React.FC<IProps> = React.memo(function Error(props) {
             },
             lineNumbers: true, // 显示行号
             lineWrapping: false, // 自动换行
-            styleActiveLine: true, // 选中行高亮
             mode: 'javascript',
             theme: 'material',
             matchBrackets: true, // 匹配括号
@@ -92,7 +91,6 @@ const Code: React.FC<IProps> = React.memo(function Error(props) {
             },
             lineNumbers: true, // 显示行号
             lineWrapping: false, // 自动换行
-            styleActiveLine: true, // 选中行高亮
             mode: 'javascript',
             theme: 'material',
             matchBrackets: true, // 匹配括号

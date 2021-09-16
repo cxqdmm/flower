@@ -32,13 +32,18 @@ const RunWindow: React.FC<IProps> = React.memo(function RunWindow(props) {
       </div>
       <div className={`${PREFIX}-bottom`}>
         <Code
-          className={`${PREFIX}-bottomLeft`}
+          className={`${PREFIX}-bottomBody`}
           value={log}
           controlled={false}
+          options={{
+            readOnly: 'nocursor',
+          }}
           scrollToBottomWhenChange={true}
         />
-        <div className={`${PREFIX}-bottomRight`}>
-          <Button onClick={clearError}>清空</Button>
+        <div className={`${PREFIX}-bottomFooter`}>
+          <Button type="default" onClick={clearError}>
+            清空
+          </Button>
         </div>
       </div>
     </div>
